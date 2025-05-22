@@ -1,6 +1,4 @@
-test_ver
-
-작동 테스트 되지 않은 코드
+test_ver 작동 테스트 되지 않은 코드
 
 폴더 구조
 - cnc_server.py
