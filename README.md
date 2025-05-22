@@ -13,3 +13,5 @@ attack syn <타겟IP> <타겟PORT> <bot_count>
 봇은 해당 타겟으로 stop 명령 받을 때까지 SYN Flood를 지속합니다.
 
 stop <bot_count>  로 종료
+
+sudo 해결이 안됨. 공격 명령 실행시 서버측에서 passwd 입력해줘야함
