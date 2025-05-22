@@ -1,4 +1,6 @@
-test_ver 작동 테스트 되지 않은 코드
+test_ver 
+
+loopback 테스트(내부 환경에) 성공 실제 환경에서는 구동 안됨. 서버 연결이 되지 않음.
 
 폴더 구조
 - cnc_server.py
