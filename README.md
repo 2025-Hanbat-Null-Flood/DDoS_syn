@@ -6,7 +6,7 @@ loopback 테스트(내부 환경에) 성공 실제 환경에서는 구동 안됨
 - cnc_server.py
 - bot_client.py
 - templates/
-    - syn_flood_loop.c
+    - syn_flood.c
  
 > 동작방식
 attack syn <타겟IP> <타겟PORT> <bot_count>
