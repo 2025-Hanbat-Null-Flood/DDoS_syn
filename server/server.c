@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-#define PORT 8080
 #define BUF_SIZE 1024
 
 int main() {
@@ -22,9 +21,9 @@ int main() {
 
     // IPv4, 모든 NIC, 8080 포트 설정
     address.sin_family = AF_INET;
-    address.sin_port = htons(PORT);
+    address.sin_port = htons(8080);
     // address.sin_addr.s_addr = INADDR_ANY; // 구식 방법
-    if (inet_pton(AF_INET, "0.0.0.0", &address.sin_addr) <= 0) {
+    if (0 >= inet_pton(AF_INET, "0.0.0.0", &address.sin_addr)) {
         perror("inet_pton");
         close(server_fd);
         exit(1);
