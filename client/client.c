@@ -1,3 +1,5 @@
+//cammand ex) attack 127.0.0.1 80
+
 #include <stdio.h>
 #include <stdatomic.h>
 #include <pthread.h>
