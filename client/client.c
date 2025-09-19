@@ -216,7 +216,7 @@ static void* recv_thread(void* arg) {
             continue;
         }
 
-        uint8_t ack = 1;
+        uint8_t ack = cmd.state;
         if (send(sock, &ack, sizeof(ack), 0) != sizeof(ack)) {
             perror("[!] ACK 전송 실패");
         } else {

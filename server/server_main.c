@@ -79,31 +79,35 @@ int main(void){
             }
         }
 
-        // 클라이언트 수신
-        for(int fd=0; fd<=S.maxfd; fd++){
-            if(!S.C[fd].active) continue;
-            if(!FD_ISSET(fd,&readfds)) continue;
-
-            unsigned char buf[sizeof(command)];
-            ssize_t n = recv(fd, buf, sizeof(buf), 0);
-            if(n > 0){
+        /* 클라이언트 수신 */
+        for (int fd = 0; fd <= S.maxfd; fd++) {
+            if (!S.C[fd].active) continue;
+            if (!FD_ISSET(fd, &readfds)) continue;
+        
+            uint8_t ack;
+            ssize_t n = recv(fd, &ack, 1, 0);      // 1바이트만 받음
+            if (n == 1) {
                 S.C[fd].last_seen_ms = now_ms();
-                if(n == (ssize_t)sizeof(command)) {
-                    const command *msg = (const command*)buf;
-                    // 클라이언트가 현재 상태 보고를 보냈다고 가정
-                    S.C[fd].state = msg->state ? S_ON : S_OFF;
+            
+                /* 데드라인 내 ack 수신 → 에러 카운트 증가 안 함 */
+                if (S.C[fd].awaiting) {
+                    S.C[fd].awaiting = 0;
+                    S.C[fd].errcnt   = 0;
                 }
-                if(S.C[fd].awaiting){
-                    S.C[fd].awaiting=0; S.C[fd].errcnt=0;
-                }
-            } else if(n==0){
+            
+                /* 선택: 상태 갱신(클라가 0/1을 보내는 경우) */
+                if (ack == 0) S.C[fd].state = S_OFF;
+                else if (ack == 1) S.C[fd].state = S_ON;
+            
+            } else if (n == 0) {
                 FD_CLR(fd, &S.master);
                 close(fd);
                 memset(&S.C[fd], 0, sizeof(S.C[fd]));
             } else {
-                if(errno==EINTR || errno==EAGAIN || errno==EWOULDBLOCK) { /* ignore */ }
-                else {
-                    if(++S.C[fd].errcnt>=MAX_ERR){
+                if (errno==EINTR || errno==EAGAIN || errno==EWOULDBLOCK) {
+                    /* ignore */
+                } else {
+                    if (++S.C[fd].errcnt >= MAX_ERR) {
                         FD_CLR(fd, &S.master);
                         close(fd);
                         memset(&S.C[fd], 0, sizeof(S.C[fd]));
@@ -112,13 +116,13 @@ int main(void){
             }
         }
 
-        // echo 타임아웃
+        /* echo 타임아웃 */
         long long t = now_ms();
-        for(int fd=0; fd<=S.maxfd; fd++){
-            if(!S.C[fd].active) continue;
-            if(S.C[fd].awaiting && t > S.C[fd].deadline_ms){
-                S.C[fd].awaiting=0;
-                if(++S.C[fd].errcnt>=MAX_ERR){
+        for (int fd = 0; fd <= S.maxfd; fd++) {
+            if (!S.C[fd].active) continue;
+            if (S.C[fd].awaiting && t > S.C[fd].deadline_ms) {
+                S.C[fd].awaiting = 0;
+                if (++S.C[fd].errcnt >= MAX_ERR) {
                     FD_CLR(fd, &S.master);
                     close(fd);
                     memset(&S.C[fd], 0, sizeof(S.C[fd]));
