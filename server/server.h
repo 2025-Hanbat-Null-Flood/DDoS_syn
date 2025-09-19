@@ -22,7 +22,7 @@
 #define BACKLOG 128
 #define MAXFD FD_SETSIZE
 #define ECHO_DEADLINE_MS 2000
-#define MAX_ERR 3
+#define MAX_ERR 10
 #define PROMPT "> "
 
 typedef enum { S_UNKNOWN=0, S_OFF=1, S_ON=2 } state_t;

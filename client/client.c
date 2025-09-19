@@ -203,9 +203,9 @@ static void* recv_thread(void* arg) {
         command_t cmd;
         ssize_t n = recv(sock, &cmd, sizeof(cmd), 0);
         if (n == 0) {
-            printf("[SERVER] 연결 종료됨\n");
-            running = 0;
-            break;
+            // printf("[SERVER] 연결 종료됨\n");
+            // running = 0;
+            continue;
         } else if (n < 0) {
             if (errno == EINTR || errno == EAGAIN) continue;
             perror("recv");
