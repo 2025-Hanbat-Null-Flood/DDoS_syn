@@ -45,6 +45,8 @@ typedef struct {
     volatile sig_atomic_t running;
     char cmdline[256];
     int  cmdlen;
+    uint32_t cur_target_ip;
+    uint16_t cur_target_port;
 } Server;
 
 // 네트워크 전송용 8바이트 커맨드
@@ -64,7 +66,7 @@ void ui_shutdown(void);
 void render_ui(const Server *S, int listen_port);
 
 // control
-int  parse_ip_be(const char *s, uint32_t *out_be);
+int  parse_ip_port(const char *s, uint32_t *ip_be, uint16_t *port_be);
 void send_command(Server *S, int fd, uint32_t ip_be, uint16_t port_be, uint8_t state);
 void broadcast_command(Server *S, uint32_t ip_be, uint16_t port_be, uint8_t state);
 void handle_command(Server *S, char *line);

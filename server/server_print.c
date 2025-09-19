@@ -39,7 +39,7 @@ void ui_shutdown(void){
 
 void render_ui(const Server *S, int listen_port){
     ui_move_home();
-    printf("[*] select/TUI server on %d  |  commands: 'all <ip> <port> on/off', 'fd <n> <ip> <port> on/off', 'kick <n>', 'list', 'help', 'quit'\n", listen_port);
+    printf("[*] select/TUI server on %d  |  commands: 'set <ip>:<port>', 'start [<fd>]', 'stop [<fd>]' (default all)\n", listen_port);
     printf("--------------------------------------------------------------------------------------------------------------------------------\n");
     printf("%-5s %-21s %-6s %-7s %-7s %-9s %-8s\n", "FD", "Peer", "Err", "Wait", "State", "LastSeen", "Deadline");
     printf("--------------------------------------------------------------------------------------------------------------------------------\n");
