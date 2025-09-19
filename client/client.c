@@ -216,6 +216,13 @@ static void* recv_thread(void* arg) {
             continue;
         }
 
+        uint8_t ack = 1;
+        if (send(sock, &ack, sizeof(ack), 0) != sizeof(ack)) {
+            perror("[!] ACK 전송 실패");
+        } else {
+            printf("[ACK] 수신 확인 응답 전송 완료\n");
+        }
+
         char ip_str[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &cmd.target_ip, ip_str, sizeof(ip_str));
         int port = ntohs(cmd.target_port);
